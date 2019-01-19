@@ -16,15 +16,18 @@ class SpotifyOAuth2Adapter(OAuth2Adapter):
     profile_url = 'https://api.spotify.com/v1/me'
 
     def complete_login(self, request, app, token, **kwargs):
-        extra_data = requests.get(self.profile_url, params={
+        extra_data_response = requests.get(self.profile_url, params={
             'access_token': token.token
         })
 
+        extra_data = extra_data_response.json()
+        if "response" in kwargs and "scope" in kwargs["response"]:
+            extra_data["scope"] = kwargs["response"]["scope"]
+
         return self.get_provider().sociallogin_from_response(
             request,
-            extra_data.json()
+            extra_data
         )
-
 
 oauth_login = OAuth2LoginView.adapter_view(SpotifyOAuth2Adapter)
 oauth_callback = OAuth2CallbackView.adapter_view(SpotifyOAuth2Adapter)
