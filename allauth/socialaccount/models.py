@@ -141,6 +141,8 @@ class SocialToken(models.Model):
     expires_at = models.DateTimeField(blank=True, null=True,
                                       verbose_name=_('expires at'))
 
+    scopes = JSONField(verbose_name="allowed scopes", blank=True, null=True)
+
     class Meta:
         unique_together = ('app', 'account')
         verbose_name = _('social application token')
@@ -267,12 +269,18 @@ class SocialLogin(object):
                 try:
                     t = SocialToken.objects.get(account=self.account,
                                                 app=self.token.app)
-                    t.token = self.token.token
-                    if self.token.token_secret:
-                        # only update the refresh token if we got one
-                        # many oauth2 providers do not resend the refresh token
-                        t.token_secret = self.token.token_secret
-                    t.expires_at = self.token.expires_at
+                    # if the existing scope is a superset of the proposed token scopes
+                    if t.scopes and self.token.scopes and len(set(t.scopes).difference(set(self.token.scopes))) > 0:
+                        pass
+                    else:
+                        t.token = self.token.token
+                        if self.token.token_secret:
+                            # only update the refresh token if we got one
+                            # many oauth2 providers do not resend the refresh token
+                            t.token_secret = self.token.token_secret
+                        if self.token.scopes:
+                            t.scopes = self.token.scopes
+                        t.expires_at = self.token.expires_at
                     t.save()
                     self.token = t
                 except SocialToken.DoesNotExist:

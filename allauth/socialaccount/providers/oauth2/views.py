@@ -59,6 +59,9 @@ class OAuth2Adapter(object):
         if expires_in:
             token.expires_at = timezone.now() + timedelta(
                 seconds=int(expires_in))
+        scopes = data.get("scope", None)
+        if scopes:
+            token.scopes = scopes.split(" ")
         return token
 
 

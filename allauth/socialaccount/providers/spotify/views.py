@@ -29,5 +29,6 @@ class SpotifyOAuth2Adapter(OAuth2Adapter):
             extra_data
         )
 
+
 oauth_login = OAuth2LoginView.adapter_view(SpotifyOAuth2Adapter)
 oauth_callback = OAuth2CallbackView.adapter_view(SpotifyOAuth2Adapter)
